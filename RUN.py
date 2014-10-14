@@ -8,7 +8,9 @@ import sys
 
 
 # create dictionary (hash table): node -> edge list
-NODE_TO_EDGE = dict()
+NODE_STATUS_DICT = dict()
+
+# global path object that we will update
 PATH = None
 
 class Node(object):
@@ -33,16 +35,21 @@ class Edge(object):
         self.t = t
         
         # update edge dictionary - maps nodes to edges
-        if n1 in NODE_TO_EDGE:
-            NODE_TO_EDGE[n1].append(self)
+        # note: 'in' is O(1) check for dictionaries
+        if n1 in NODE_STATUS_DICT:
+            NODE_STATUS_DICT[n1]['edges'].append(self)
         else:
-            NODE_TO_EDGE[n1] = [self]
+            NODE_STATUS_DICT[n1] = {'traversed': False,
+                                    'edges': [self]
+                                    }
         
-        if n2 in NODE_TO_EDGE:
-            NODE_TO_EDGE[n2].append(self)
+        if n2 in NODE_STATUS_DICT:
+            NODE_STATUS_DICT[n2]['edges'].append(self)
         else:
-            NODE_TO_EDGE[n2] = [self]
-    
+            NODE_STATUS_DICT[n2] = {'traversed': False,
+                                    'edges': [self]
+                                    }
+
     def __str__(self):
         return '[%s---%s at %s]' % (str(self.n1),
                                     str(self.n2),
@@ -75,7 +82,7 @@ def BFS(node_ind, target_node, start_time, end_time):
     it connects 0th node to the target node with edges meeting the time
     requirements.
     
-    Time complexity: O(m+n)
+    Time complexity: O(m)
     '''
     if start_time > end_time:
         # unsuccessful base case
@@ -84,16 +91,21 @@ def BFS(node_ind, target_node, start_time, end_time):
     if PATH.nodes[node_ind].id == target_node:
         # successful base case
         return
-    for edge in NODE_TO_EDGE[PATH.nodes[node_ind].id]:
+    while len(NODE_STATUS_DICT[PATH.nodes[node_ind].id]['edges']) > 0 and \
+        PATH.get_last_node().id != target_node:
+        # we will traverse each edge at most once
+        edge = NODE_STATUS_DICT[PATH.nodes[node_ind].id]['edges'].pop(0)
         n1 = Node(edge.n1, edge.t, PATH.nodes[node_ind].id)
         n2 = Node(edge.n2, edge.t, PATH.nodes[node_ind].id)
-        if n1 not in PATH.nodes and edge.t >= start_time:
-            # valid edge
+        if not NODE_STATUS_DICT[n1.id]['traversed'] and edge.t >= start_time:
+            # valid node to add, but mark it off
             PATH.add_node(n1)
+            NODE_STATUS_DICT[n1.id]['traversed'] = True
             BFS(node_ind+1, target_node, edge.t, end_time)
-        elif n2 not in PATH.nodes and edge.t >= start_time:
-            # valid edge
+        elif not NODE_STATUS_DICT[n2.id]['traversed'] and edge.t >= start_time:
+            # valid node to add, but mark it off
             PATH.add_node(n2)
+            NODE_STATUS_DICT[n2.id]['traversed'] = True
             BFS(node_ind+1, target_node, edge.t, end_time)
     
     if PATH.get_last_node().id != target_node:
@@ -105,7 +117,6 @@ if __name__ == "__main__":
     
     try:
         file_name = sys.argv[1]
-        #'Samples/input0.txt'
     except:
         print('Missing filename argument\nUsage: %s <filename>' % sys.argv[0])
         exit(1)
@@ -121,9 +132,10 @@ if __name__ == "__main__":
         
     from_node, to_node, start_time, end_time = file_handle.readline().split()
     
-    # create PATH object
+    # create PATH object with start node, mark start node traversed
     PATH = Path(Node(int(from_node), int(start_time)))
-    
+    NODE_STATUS_DICT[int(from_node)]['traversed'] = True
+
     # recursive BFS to find PATH (alters in place)
     BFS(0, int(to_node), int(start_time), int(end_time))
     

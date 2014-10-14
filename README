@@ -26,6 +26,7 @@ BFS(start_node, target_node, start_time, target_time)
         # path completed successfully
         return path
     for each edge e incident on start_node:
+        mark edge so we won't traverse it again
         if e's other node n' is not in our path and start_time < e's time:
             # recursive call
             add n' to our path
@@ -40,13 +41,14 @@ will be empty.
 
 Time Complexity:
 
-Creating the list and node_to_edge hash table take O(m) time because we iterate over the edges,
+Creating the list and node_to_edge hash table takes O(m) time because we iterate over the edges,
 and each edge has a fixed number of nodes (2). The addition of the edge to the node's list in the
 hash table is constant time (assuming amortized doubling of lists).
 
-The BFS processing is a slightly altered breadth-first search, which could only reduce the
-processing time from BFS's O(m+n), as it has an additional constraint on which nodes to add.
-Thus, the entire algorithm is O(m+n).
+The BFS processing is a slightly altered breadth-first search, which reduces the processing 
+time from BFS's O(m+n) to O(m), as it will not traverse any components not connected to the 
+start node, and our algorithm traverse each edge at most twice (once from its node1, once
+from its node2). Thus, the entire algorithm is O(m).
 
 Correctness:
 
