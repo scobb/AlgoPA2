@@ -1,0 +1,75 @@
+Steve Cobb
+Algorithms Programming Assignment 2
+
+Usage: 
+$ ./RUN.py <file>
+
+Output is to stdout.
+
+Pseudocode:
+
+Create list of edges (transactions) along with the time the transaction executes. O(m)
+
+While creating edges, add entries to a hash table node_to_edge at the key [node_id] where 
+the value is a list of edges. Thus, node_to_edge[node_id] points to a list of all incident 
+edges upon node n with id node_id by the time all edges are created. O(m)
+
+Initialize a global variable path (list of nodes) whose only element is designated start_node.
+Begin modified BFS to update this path:
+
+BFS(start_node, target_node, start_time, target_time)
+    if start_time > target_time:
+        # unsuccessful; backtrack
+        remove last node from path
+        return path
+    if start_node == target_node:
+        # path completed successfully
+        return path
+    for each edge e incident on start_node:
+        if e's other node n' is not in our path and start_time < e's time:
+            # recursive call
+            add n' to our path
+            DFS(start_node = n', target_node=target_node, start_time = e's time, target_time=target_time)
+    
+    if last node on path is not target_node:
+        #unsuccessful after; backtrack
+        remove last node on path
+
+At this point, path will either be the full path from start_node to target_node or it
+will be empty.
+
+Time Complexity:
+
+Creating the list and node_to_edge hash table take O(m) time because we iterate over the edges,
+and each edge has a fixed number of nodes (2). The addition of the edge to the node's list in the
+hash table is constant time (assuming amortized doubling of lists).
+
+The BFS processing is a slightly altered breadth-first search, which could only reduce the
+processing time from BFS's O(m+n), as it has an additional constraint on which nodes to add.
+Thus, the entire algorithm is O(m+n).
+
+Correctness:
+
+Suppose this algorithm does not work. That is, suppose the path P returned is incorrect. P is either:
+    1. An empty path when a successful path exists.
+    2. A path with edges which do not meet the timing/connection criteria
+
+Let us examine possibility 1 first. An empty P means our algorithm, on its last iteration, did not
+have the correct target node at P's last index. This could have happened for two reasons:
+    1. The initial start time was later than the target_time
+    2. The DFS executed but failed to find the target_node using only edges with time before 
+       target_time
+
+In case 1, there is no successful path, and we've reached a contradiction. In case 2, each branch
+of the BFS tree must have culminated only in edges that (1) did not lead to the target node or (2)
+were past the target time. Thus, there is no successful path, and we've reached a contradiction.
+
+Now let us examine possibilty 2. Let us assume that a node n exists in our path such that n was
+added out of order. That is, n was added to our path before its parent, n-1, received the trans-
+mission. That means that the edge connecting n and n-1 must have a time of some t0, while the
+edge between n-1 and its parent n-2 must have some time t1 > t0. But that means that in the exe-
+cution of the above algorithm, n would never have been added to our path, because the time of the
+edge (t0) would have been before the start_time for that execution of BFS (t1). Thus, we've reached
+a contradiction, and this algorithm must be correct.
+
+

@@ -8,7 +8,8 @@ import sys
 
 
 # create dictionary (hash table): node -> edge list
-node_to_edge = dict()
+NODE_TO_EDGE = dict()
+PATH = None
 
 class Node(object):
     def __init__(self, id, t, parent=None):
@@ -20,7 +21,6 @@ class Node(object):
         return self.id == other.id
     
     def __str__(self):
-        #return '%s %s %s' % (str(self.parent), str(self.id), str(self.t))
         if self.parent != None:
             return '%s %s %s' % (str(self.parent), str(self.id), str(self.t))
         else:
@@ -33,15 +33,15 @@ class Edge(object):
         self.t = t
         
         # update edge dictionary - maps nodes to edges
-        if n1 in node_to_edge:
-            node_to_edge[n1].append(self)
+        if n1 in NODE_TO_EDGE:
+            NODE_TO_EDGE[n1].append(self)
         else:
-            node_to_edge[n1] = [self]
+            NODE_TO_EDGE[n1] = [self]
         
-        if n2 in node_to_edge:
-            node_to_edge[n2].append(self)
+        if n2 in NODE_TO_EDGE:
+            NODE_TO_EDGE[n2].append(self)
         else:
-            node_to_edge[n2] = [self]
+            NODE_TO_EDGE[n2] = [self]
     
     def __str__(self):
         return '[%s---%s at %s]' % (str(self.n1),
@@ -70,36 +70,35 @@ class Path(object):
     def get_last_node(self):
         return self.nodes[-1]
 
-def BFS(path, node_ind, target_node, start_time, end_time):
-    ''' BFS - recursieve breadth-first search. Alters path in place such that
+def BFS(node_ind, target_node, start_time, end_time):
+    ''' BFS - recursive breadth-first search. Alters PATH in place such that
     it connects 0th node to the target node with edges meeting the time
     requirements.
     
     Time complexity: O(m+n)
     '''
-    if path.nodes[node_ind].id == target_node:
-        # found it
-        return
     if start_time > end_time:
-        # unsuccessful path
-        path.remove_last_node()
+        # unsuccessful base case
+        PATH.remove_last_node()
         return
-    for edge in node_to_edge[path.nodes[node_ind].id]:
-        n1 = Node(edge.n1, edge.t, path.nodes[node_ind].id)
-        n2 = Node(edge.n2, edge.t, path.nodes[node_ind].id)
-        if n1 not in path.nodes and edge.t >= start_time and \
-          edge.t <= end_time:
+    if PATH.nodes[node_ind].id == target_node:
+        # successful base case
+        return
+    for edge in NODE_TO_EDGE[PATH.nodes[node_ind].id]:
+        n1 = Node(edge.n1, edge.t, PATH.nodes[node_ind].id)
+        n2 = Node(edge.n2, edge.t, PATH.nodes[node_ind].id)
+        if n1 not in PATH.nodes and edge.t >= start_time:
             # valid edge
-            path.add_node(n1)
-            BFS(path, node_ind+1, target_node, edge.t, end_time)
-        elif n2 not in path.nodes and edge.t >= start_time and \
-          edge.t <= end_time:
+            PATH.add_node(n1)
+            BFS(node_ind+1, target_node, edge.t, end_time)
+        elif n2 not in PATH.nodes and edge.t >= start_time:
             # valid edge
-            path.add_node(n2)
-            BFS(path, node_ind+1, target_node, edge.t, end_time)
+            PATH.add_node(n2)
+            BFS(node_ind+1, target_node, edge.t, end_time)
     
-    if path.get_last_node().id != target_node:
-        path.remove_last_node()
+    if PATH.get_last_node().id != target_node:
+        # unsuccessful case - backtrack
+        PATH.remove_last_node()
     
                 
 if __name__ == "__main__":
@@ -122,17 +121,17 @@ if __name__ == "__main__":
         
     from_node, to_node, start_time, end_time = file_handle.readline().split()
     
-    # create path object
-    path = Path(Node(int(from_node), int(start_time)))
+    # create PATH object
+    PATH = Path(Node(int(from_node), int(start_time)))
     
-    # recursive BFS to find path (alters in place)
-    BFS(path, 0, int(to_node), int(start_time), int(end_time))
+    # recursive BFS to find PATH (alters in place)
+    BFS(0, int(to_node), int(start_time), int(end_time))
     
-    if (len(path.nodes) > 0):
-        print(len(path.nodes) -1)
-        print(path)
+    if (len(PATH.nodes) > 0):
+        print(len(PATH.nodes) -1)
+        print(PATH)
     else:
-        print (len(path.nodes))
+        print (len(PATH.nodes))
 
     
     
