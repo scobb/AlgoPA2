@@ -1,9 +1,10 @@
+#!/usr/bin/env python
 '''
 Created on Oct 13, 2014
 
 @author: scobb
 '''
-import copy, sys
+import sys
 
 
 # create dictionary (hash table): node -> edge list
@@ -53,45 +54,67 @@ class Path(object):
         
     def __str__(self):
         ret_str = ''
+        prefix = ''
         for node in self.nodes:
             if node.parent != None:
-                ret_str += str(node) + '\n'
+                ret_str += prefix + str(node)
+                prefix = '\n'
         return ret_str
+    
+    def remove_last_node(self):
+        self.nodes.pop(-1)
+        
+    def add_node(self, node):
+        self.nodes.append(node)
+        
+    def get_last_node(self):
+        return self.nodes[-1]
 
 def BFS(path, node_ind, target_node, start_time, end_time):
-    path = copy.copy(path)
+    ''' BFS - recursieve breadth-first search. Alters path in place such that
+    it connects 0th node to the target node with edges meeting the time
+    requirements.
+    
+    Time complexity: O(m+n)
+    '''
     if path.nodes[node_ind].id == target_node:
         # found it
-        return path
+        return
     if start_time > end_time:
         # unsuccessful path
-        path.nodes.pop(-1)
-        return path
+        path.remove_last_node()
+        return
     for edge in node_to_edge[path.nodes[node_ind].id]:
-    
-        if Node(edge.n1, edge.t, path.nodes[node_ind].id) not in path.nodes and \
-            edge.t >= start_time and edge.t <= end_time:
+        n1 = Node(edge.n1, edge.t, path.nodes[node_ind].id)
+        n2 = Node(edge.n2, edge.t, path.nodes[node_ind].id)
+        if n1 not in path.nodes and edge.t >= start_time and \
+          edge.t <= end_time:
             # valid edge
-            path.nodes.append(Node(edge.n1, edge.t, path.nodes[node_ind].id))
-            path = BFS(path, node_ind+1, target_node, edge.t, end_time)
-        elif Node(edge.n2, edge.t, path.nodes[node_ind].id) not in path.nodes and \
-            edge.t >= start_time and edge.t <= end_time:
+            path.add_node(n1)
+            BFS(path, node_ind+1, target_node, edge.t, end_time)
+        elif n2 not in path.nodes and edge.t >= start_time and \
+          edge.t <= end_time:
             # valid edge
-            path.nodes.append(Node(edge.n2, edge.t, path.nodes[node_ind].id))
-            path = BFS(path, node_ind+1, target_node, edge.t, end_time)
+            path.add_node(n2)
+            BFS(path, node_ind+1, target_node, edge.t, end_time)
     
-    if path.nodes[-1].id != target_node:
-        path.nodes.pop(-1)
+    if path.get_last_node().id != target_node:
+        path.remove_last_node()
     
-    return path
                 
 if __name__ == "__main__":
     
-    file_name = sys.argv[1]
-    #'Samples/input0.txt'
+    try:
+        file_name = sys.argv[1]
+        #'Samples/input0.txt'
+    except:
+        print('Missing filename argument\nUsage: %s <filename>' % sys.argv[0])
+        exit(1)
     
     edges = []
-    file_handle = file(file_name, 'r')
+    file_handle = open(file_name, 'r')
+    
+    # parse the file
     num_edges = int(file_handle.readline().split()[1])
     for _ in range(num_edges):
         node1, node2, time = file_handle.readline().split()
@@ -99,12 +122,17 @@ if __name__ == "__main__":
         
     from_node, to_node, start_time, end_time = file_handle.readline().split()
     
+    # create path object
     path = Path(Node(int(from_node), int(start_time)))
     
-    path = BFS(path, 0, int(to_node), int(start_time), int(end_time))
+    # recursive BFS to find path (alters in place)
+    BFS(path, 0, int(to_node), int(start_time), int(end_time))
     
-    print(len(path.nodes))
-    print(path)
+    if (len(path.nodes) > 0):
+        print(len(path.nodes) -1)
+        print(path)
+    else:
+        print (len(path.nodes))
 
     
     
