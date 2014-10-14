@@ -3,7 +3,7 @@ Created on Oct 13, 2014
 
 @author: scobb
 '''
-import copy
+import copy, sys
 
 
 # create dictionary (hash table): node -> edge list
@@ -87,7 +87,8 @@ def BFS(path, node_ind, target_node, start_time, end_time):
                 
 if __name__ == "__main__":
     
-    file_name = 'Samples/input0.txt'
+    file_name = sys.argv[1]
+    #'Samples/input0.txt'
     
     edges = []
     file_handle = file(file_name, 'r')
