@@ -15,9 +15,9 @@ the value is a list of edges. Thus, node_to_edge[node_id] points to a list of al
 edges upon node n with id node_id by the time all edges are created. O(m)
 
 Initialize a global variable path (list of nodes) whose only element is designated start_node.
-Begin modified BFS to update this path:
+Begin modified DFS to update this path:
 
-BFS(start_node, target_node, start_time, target_time)
+DFS(start_node, target_node, start_time, target_time)
     if start_time > target_time:
         # unsuccessful; backtrack
         remove last node from path
@@ -45,8 +45,8 @@ Creating the list and node_to_edge hash table takes O(m) time because we iterate
 and each edge has a fixed number of nodes (2). The addition of the edge to the node's list in the
 hash table is constant time (assuming amortized doubling of lists).
 
-The BFS processing is a slightly altered breadth-first search, which reduces the processing 
-time from BFS's O(m+n) to O(m), as it will not traverse any components not connected to the 
+The DFS processing is a slightly altered breadth-first search, which reduces the processing 
+time from DFS's O(m+n) to O(m), as it will not traverse any components not connected to the 
 start node, and our algorithm traverse each edge at most twice (once from its node1, once
 from its node2). Thus, the entire algorithm is O(m).
 
@@ -58,12 +58,12 @@ Suppose this algorithm does not work. That is, suppose the path P returned is in
 
 Let us examine possibility 1 first. An empty P means our algorithm, on its last iteration, did not
 have the correct target node at P's last index. This could have happened for two reasons:
-    1. The initial start time was later than the target_time
-    2. The DFS executed but failed to find the target_node using only edges with time before 
+    1.1. The initial start time was later than the target_time
+    1.2. The DFS executed but failed to find the target_node using only edges with time before 
        target_time
 
-In case 1, there is no successful path, and we've reached a contradiction. In case 2, each branch
-of the BFS tree must have culminated only in edges that (1) did not lead to the target node or (2)
+In case 1.1, there is no successful path, and we've reached a contradiction. In case 1.2, each branch
+of the DFS tree must have culminated only in edges that (1) did not lead to the target node or (2)
 were past the target time. Thus, there is no successful path, and we've reached a contradiction.
 
 Now let us examine possibilty 2. Let us assume that a node n exists in our path such that n was
@@ -71,7 +71,7 @@ added out of order. That is, n was added to our path before its parent, n-1, rec
 mission. That means that the edge connecting n and n-1 must have a time of some t0, while the
 edge between n-1 and its parent n-2 must have some time t1 > t0. But that means that in the exe-
 cution of the above algorithm, n would never have been added to our path, because the time of the
-edge (t0) would have been before the start_time for that execution of BFS (t1). Thus, we've reached
+edge (t0) would have been before the start_time for that execution of DFS (t1). Thus, we've reached
 a contradiction, and this algorithm must be correct.
 
 

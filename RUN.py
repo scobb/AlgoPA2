@@ -77,8 +77,8 @@ class Path(object):
     def get_last_node(self):
         return self.nodes[-1]
 
-def BFS(node_ind, target_node, start_time, end_time):
-    ''' BFS - recursive breadth-first search. Alters PATH in place such that
+def DFS(node_ind, target_node, start_time, end_time):
+    ''' DFS - recursive breadth-first search. Alters PATH in place such that
     it connects 0th node to the target node with edges meeting the time
     requirements.
     
@@ -101,12 +101,12 @@ def BFS(node_ind, target_node, start_time, end_time):
             # valid node to add, but mark it off
             PATH.add_node(n1)
             NODE_STATUS_DICT[n1.id]['traversed'] = True
-            BFS(node_ind+1, target_node, edge.t, end_time)
+            DFS(node_ind+1, target_node, edge.t, end_time)
         elif not NODE_STATUS_DICT[n2.id]['traversed'] and edge.t >= start_time:
             # valid node to add, but mark it off
             PATH.add_node(n2)
             NODE_STATUS_DICT[n2.id]['traversed'] = True
-            BFS(node_ind+1, target_node, edge.t, end_time)
+            DFS(node_ind+1, target_node, edge.t, end_time)
     
     if PATH.get_last_node().id != target_node:
         # unsuccessful case - backtrack
@@ -136,8 +136,8 @@ if __name__ == "__main__":
     PATH = Path(Node(int(from_node), int(start_time)))
     NODE_STATUS_DICT[int(from_node)]['traversed'] = True
 
-    # recursive BFS to find PATH (alters in place)
-    BFS(0, int(to_node), int(start_time), int(end_time))
+    # recursive DFS to find PATH (alters in place)
+    DFS(0, int(to_node), int(start_time), int(end_time))
     
     if (len(PATH.nodes) > 0):
         print(len(PATH.nodes) -1)
