@@ -3,12 +3,19 @@
 if [ ! -d test ]; then
     mkdir test 
 fi
+for file in $(ls)
+do
+    if [[ $file =~ RUN ]]; then
+        exec=$file
+    fi
+done
+
 regex="in([0-9]+)\.txt"
 for file in $(ls sample_tests)
 do
     if [[ $file =~ $regex ]]; then
         num="${BASH_REMATCH[1]}"
-	./RUN.py sample_tests/$file > test/out$num
+	./$exec sample_tests/$file > test/out$num
         mydiff=$(diff sample_tests/out$num.txt test/out$num)
         if [[ -n $mydiff ]]; then
             OUTPUT=$OUTPUT"Test $num failed: $mydiff"
