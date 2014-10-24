@@ -5,7 +5,7 @@ if [ ! -d test ]; then
 fi
 for file in $(ls)
 do
-    if [[ $file =~ RUN ]]; then
+    if [[ $file =~ run ]]; then
         exec=$file
     fi
 done
